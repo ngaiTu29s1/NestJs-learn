@@ -1,39 +1,45 @@
-import { Body, Controller, Get, Param,Patch,Post, Delete, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Delete, Query, ParseIntPipe, ValidationPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
-    @Get()
-    findAll(@Query('role') role?: 'intern' | 'employee' | 'manager') {
-        return this.usersService.findAll(role);
-    }
-    
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.usersService.findOne(+id);
-    }
+  @Get()
+  findAll(@Query('role') role?: 'intern' | 'employee' | 'manager') {
+    return this.usersService.findAll(role);
+  }
 
-    @Get('Male')
-    findAllMale() {
-        return 'Here is all male'
-    }
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
+  }
 
-    @Post()
-    create(@Body() user: {name: string, email: string, role: 'intern' | 'employee' | 'manager'}) {
-        return 'User created: ' + JSON.stringify(this.usersService.create(user));
-    }
+  @Get('Male')
+  findAllMale() {
+    return 'Here is all male';
+  }
 
-    @Patch(':id')
-    update(@Param('id') id: number, @Body() userUpdate :{name?: string, email?: string, role?: 'intern', 'employee', 'manager'})
-    {
-        return 'User has been updated with id ' + +id + ' is ' + JSON.stringify(this.usersService.update(+id, userUpdate));
-    }
+  @Post()
+  create(
+    @Body(ValidationPipe)
+    createUserDto: CreateUserDto,
+  ) {
+    return 'User created: ' + JSON.stringify(this.usersService.create(createUserDto));
+  }
 
-    @Delete(':id')
-    delete(@Param('id') id: string) {
-        return this.usersService.remove(+id) + ' has been deleted'
-    }
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return `User with id ${id} has been updated: ${JSON.stringify(updateUserDto)}`;
+  }
 
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.remove(id) + ' has been deleted';
+  }
 }
